@@ -1,0 +1,36 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 29.05.2026 16:27:22
+// Design Name: 
+// Module Name: pc
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module PC(
+input [31:0] PC_in, input Clk, Reset, output reg [31:0] PC_out
+    );
+    
+    always@(posedge Clk, negedge Reset) begin
+       if(!Reset) begin
+          PC_out <= 32'h00000000;
+       end
+       else begin
+          PC_out <= PC_in;
+       end
+    end
+    
+endmodule
