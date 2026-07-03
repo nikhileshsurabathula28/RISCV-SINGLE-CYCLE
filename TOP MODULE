@@ -1,0 +1,175 @@
+  `timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 23.06.2026 12:12:48
+// Design Name: 
+// Module Name: top
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
+
+module top(
+
+    input CLK100MHZ,
+    input btnC,
+
+    input [4:0] sw,
+
+    output reg [3:0] an,
+    output [6:0] seg
+
+);
+
+wire [31:0] display_data;
+
+//==========================================
+// Slow Clock for Processor
+//==========================================
+
+reg [26:0] clk_div = 0;
+
+always @(posedge CLK100MHZ)
+begin
+    clk_div <= clk_div + 1;
+end
+
+wire slow_clk;
+
+assign slow_clk = clk_div[18];
+
+//==========================================
+// Processor
+//==========================================
+
+processor cpu(
+
+    .Clk(slow_clk),
+    .Reset(~btnC),
+
+    .display_index(sw),
+    .display_data(display_data),
+
+    .PC_debug(),
+    .instruction_debug(),
+    .immediate_debug(),
+    .ALU_Result_debug(),
+    .jal_target_debug(),
+    .jalr_target_debug(),
+
+    .opcode_debug(),
+
+    .rs2_debug(),
+    .rs1_debug(),
+    .rd_debug(),
+
+    .funct3_debug(),
+
+    .ALUControl_debug(),
+
+    .Zero_debug(),
+    .Less_debug(),
+    .LessU_debug(),
+
+    .Branch_debug(),
+    .MemRead_debug(),
+    .MemWrite_debug(),
+
+    .ALUSrcB_debug(),
+    .RegWrite_debug(),
+
+    .Branch_taken_debug(),
+
+    .WriteBackSel_debug(),
+    .ALUOp_debug(),
+
+    .ALUSrcA_debug(),
+    .PCSel_debug()
+
+);
+
+// Binary to Decimal Digits
+
+wire [3:0] ones;
+wire [3:0] tens;
+wire [3:0] hundreds;
+wire [3:0] thousands;
+
+assign ones      = display_data % 10;
+assign tens      = (display_data / 10) % 10;
+assign hundreds  = (display_data / 100) % 10;
+assign thousands = (display_data / 1000) % 10;
+
+//==========================================
+// Seven Segment Refresh
+//==========================================
+
+reg [19:0] refresh_counter = 0;
+
+always @(posedge CLK100MHZ)
+begin
+    refresh_counter <= refresh_counter + 1;
+end
+
+wire [1:0] digit_select;
+
+assign digit_select = refresh_counter[19:18];
+
+reg [3:0] current_digit;
+
+always @(*)
+begin
+
+    case(digit_select)
+
+        2'b00:
+        begin
+            an = 4'b1110;
+            current_digit = ones;
+        end
+
+        2'b01:
+        begin
+            an = 4'b1101;
+            current_digit = tens;
+        end
+
+        2'b10:
+        begin
+            an = 4'b1011;
+            current_digit = hundreds;
+        end
+
+        default:
+        begin
+            an = 4'b0111;
+            current_digit = thousands;
+        end
+
+    endcase
+
+end
+
+//==========================================
+// Seven Segment Decoder
+//==========================================
+
+sevenseg_decoder SSD(
+
+    .digit(current_digit),
+    .seg(seg)
+
+);
+
+Endmodule
