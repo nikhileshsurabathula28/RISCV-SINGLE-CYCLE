@@ -1,0 +1,81 @@
+module tb_processor(
+
+    );
+    reg Clk, Reset;
+    wire [31:0] PC_debug, instruction_debug, immediate_debug, ALU_Result_debug, jal_target_debug, jalr_target_debug;
+    wire [4:0] rs2_debug, rs1_debug, rd_debug;
+    wire [2:0] funct3_debug;
+    wire [3:0] ALUControl_debug;
+    wire Zero_debug, Less_debug, LessU_debug, Branch_debug, MemRead_debug, MemWrite_debug, ALUSrcB_debug, RegWrite_debug, Branch_taken_debug;
+    wire [1:0] WriteBackSel_debug, ALUOp_debug, ALUSrcA_debug, PCSel_debug;
+    reg [4:0] display_index;
+    wire [31:0] display_data;
+    
+    processor prssr(
+         .Clk(Clk), .Reset(Reset), .PC_debug(PC_debug), .instruction_debug(instruction_debug),
+         .rs2_debug(rs2_debug), .rs1_debug(rs1_debug), .rd_debug(rd_debug),
+         .funct3_debug(funct3_debug), .immediate_debug(immediate_debug), .ALU_Result_debug(ALU_Result_debug),
+         .ALUControl_debug(ALUControl_debug), .Zero_debug(Zero_debug), .Less_debug(Less_debug),
+         .LessU_debug(LessU_debug), .Branch_debug(Branch_debug), .MemRead_debug(MemRead_debug),
+         .WriteBackSel_debug(WriteBackSel_debug), .ALUOp_debug(ALUOp_debug), .MemWrite_debug(MemWrite_debug),
+         .ALUSrcA_debug(ALUSrcA_debug), .ALUSrcB_debug(ALUSrcB_debug), .RegWrite_debug(RegWrite_debug),
+         .Branch_taken_debug(Branch_taken_debug), .jal_target_debug(jal_target_debug),
+         .jalr_target_debug(jalr_target_debug), .PCSel_debug(PCSel_debug),
+         .display_index(display_index), .display_data(display_data)
+       );
+       
+    initial begin
+       Clk = 0;
+       
+       forever #5 Clk = ~Clk;
+    end
+    
+    initial begin
+       display_index = 0;
+       
+       Reset = 0;
+       #20;
+       Reset = 1;
+    end
+    
+    initial begin
+
+        #1000 display_index = 0;
+        #1000 display_index = 1;
+        #1000 display_index = 2;
+        #1000 display_index = 3;
+        #1000 display_index = 4;
+        #1000 display_index = 5;
+        #1000 display_index = 6;
+        #1000 display_index = 7;
+        #1000 display_index = 8;
+        #1000 display_index = 9;
+
+    end
+    
+    initial begin
+        #20000;
+        $display("gp = %0d", prssr.registers.registers[3]);
+        $display("PC = %h", PC_debug);
+        $display("Instruction = %h", instruction_debug);
+        $finish;
+    end
+
+
+
+    // Monitor important signals
+    initial begin
+    $monitor(
+    "T=%0t PC=%h Instr=%h ALU=%h PCSel=%b Branch=%b Zero=%b Index=%0d Data=%0d",
+    $time,
+    PC_debug,
+    instruction_debug,
+    ALU_Result_debug,
+    PCSel_debug,
+    Branch_taken_debug,
+    Zero_debug,
+    display_index,
+    display_data
+    );
+end
+endmodule
